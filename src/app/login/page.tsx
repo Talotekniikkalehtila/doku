@@ -5,62 +5,73 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function sendMagicLink() {
+  async function login() {
     setMsg(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: {
-        // 🔴 TÄRKEÄ: EI localhostia
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      password,
     });
 
     if (error) {
       setMsg("Virhe: " + error.message);
-    } else {
-      setMsg("Kirjautumislinkki lähetetty sähköpostiisi.");
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    // jos middleware on käytössä, voidaan ohjata takaisin "next":iin
+    const next = new URLSearchParams(window.location.search).get("next") || "/reports";
+    window.location.href = next;
   }
 
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow">
-        <h1 className="text-xl font-semibold text-slate-900">
-          Kirjaudu sisään
-        </h1>
+        <h1 className="text-xl font-semibold text-slate-900">Kirjaudu sisään</h1>
 
-        <p className="mt-2 text-sm text-slate-600">
-          Syötä sähköpostiosoite. Saat kirjautumislinkin sähköpostiisi.
-        </p>
-
-        <input
-          type="email"
-          placeholder="sähköposti@yritys.fi"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-4 w-full rounded-xl border px-3 py-2 text-sm"
-        />
-
-        <button
-          onClick={sendMagicLink}
-          disabled={!email || loading}
-          className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {loading ? "Lähetetään…" : "Lähetä kirjautumislinkki"}
-        </button>
-
-        {msg && (
-          <div className="mt-4 text-sm text-slate-700">
-            {msg}
+        <div className="mt-4 grid gap-3">
+          <div>
+            <div className="text-sm font-medium text-slate-700">Sähköposti</div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              placeholder="info@jltt.fi"
+              autoComplete="email"
+            />
           </div>
-        )}
+
+          <div>
+            <div className="text-sm font-medium text-slate-700">Salasana</div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") login();
+              }}
+            />
+          </div>
+
+          <button
+            onClick={login}
+            disabled={!email || !password || loading}
+            className="mt-1 w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {loading ? "Kirjaudutaan…" : "Kirjaudu"}
+          </button>
+
+          {msg ? <div className="text-sm text-slate-700">{msg}</div> : null}
+        </div>
       </div>
     </main>
   );
