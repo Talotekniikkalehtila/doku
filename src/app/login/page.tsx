@@ -10,24 +10,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function login() {
-    setMsg(null);
-    setLoading(true);
+  setMsg(null);
+  setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    if (error) {
-      setMsg("Virhe: " + error.message);
-      setLoading(false);
-      return;
-    }
-
-    // jos middleware on käytössä, voidaan ohjata takaisin "next":iin
-    const next = new URLSearchParams(window.location.search).get("next") || "/reports";
-    window.location.href = next;
+  if (error) {
+    setMsg("Virhe: " + error.message);
+    setLoading(false);
+    return;
   }
+
+  // ✅ varmistetaan että sessio oikeasti on olemassa
+  // (joskus cookie ei ehdi asettua heti)
+  const { data: s2 } = await supabase.auth.getSession();
+  if (!s2.session) {
+    setMsg("Kirjautuminen näytti onnistuvan, mutta sessio puuttuu. Tarkista domain/cookie.");
+    setLoading(false);
+    return;
+  }
+
+  const next = new URLSearchParams(window.location.search).get("next") || "/reports";
+  window.location.href = next;
+}
 
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center">
