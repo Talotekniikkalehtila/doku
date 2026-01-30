@@ -1,57 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const isPublicPath = (pathname: string) => {
-  // ✅ jaot julkiseksi + login/callback
-  if (pathname === "/login" || pathname.startsWith("/login/")) return true;
-  if (pathname === "/auth/callback" || pathname.startsWith("/auth/callback/")) return true;
-  if (pathname === "/share" || pathname.startsWith("/share/")) return true;
-
-  // Next/static
-  if (pathname.startsWith("/_next")) return true;
-  if (pathname === "/favicon.ico") return true;
-
-  return false;
-};
-
-export default function AuthGate() {
+export default function AuthGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
-  const search = useSearchParams();
+
   const [checking, setChecking] = useState(true);
+  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    if (!pathname) return;
-
-    // julkiset reitit läpi
-    if (isPublicPath(pathname)) {
-      setChecking(false);
-      return;
-    }
+    let alive = true;
 
     (async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
 
-      if (!data.session) {
-        const next = pathname + (search?.toString() ? `?${search.toString()}` : "");
-        window.location.href = `/login?next=${encodeURIComponent(next)}`;
-        return;
-      }
+      if (!alive) return;
 
+      const ok = !!data.session && !error;
+      setAuthed(ok);
       setChecking(false);
-    })();
-  }, [pathname, search]);
 
-  // pieni “loading”, ettei vilku suojattu sisältö
-  if (checking && pathname && !isPublicPath(pathname)) {
+      // Jos ei ole kirjautunut ja ei olla login-sivulla -> ohjaa login
+      if (!ok && pathname !== "/login") {
+        router.replace("/login");
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [router, pathname]);
+
+  if (checking) {
     return (
-      <div className="fixed inset-0 bg-slate-50 grid place-items-center text-slate-600">
+      <div style={{ padding: 24, color: "#334155" }}>
         Tarkistetaan kirjautuminen…
       </div>
     );
   }
 
-  return null;
+  if (!authed && pathname !== "/login") {
+    // redirect on jo käynnissä
+    return (
+      <div style={{ padding: 24, color: "#334155" }}>
+        Ohjataan kirjautumiseen…
+      </div>
+    );
+  }
+
+  // Authed tai login-sivu
+  return <>{children}</>;
 }

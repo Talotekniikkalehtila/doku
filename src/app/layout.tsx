@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import AuthGate from "@/components/AuthGate";
 
 export const metadata: Metadata = {
@@ -7,19 +8,12 @@ export const metadata: Metadata = {
   description: "Dokumentointisovellus",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fi">
       <body>
         {/* 🔒 Lukitsee koko äpin paitsi /share */}
-        <AuthGate />
-
-        {/* 🔽 Varsinainen appi */}
-        {children}
+        <AuthGate>{children}</AuthGate>
       </body>
     </html>
   );
