@@ -1,56 +1,40 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function AuthGate({ children }: { children: ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
+const isPublic = (p: string) =>
+  p === "/login" || p.startsWith("/login/") || p.startsWith("/share/");
 
+export default function AuthGate({ children }: { children: ReactNode }) {
+  const pathname = usePathname() || "/";
+  const search = useSearchParams();
   const [checking, setChecking] = useState(true);
-  const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    let alive = true;
+    if (isPublic(pathname)) {
+      setChecking(false);
+      return;
+    }
 
     (async () => {
-      const { data, error } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
 
-      if (!alive) return;
-
-      const ok = !!data.session && !error;
-      setAuthed(ok);
-      setChecking(false);
-
-      // Jos ei ole kirjautunut ja ei olla login-sivulla -> ohjaa login
-      if (!ok && pathname !== "/login") {
-        router.replace("/login");
+      if (!data.session) {
+        const qs = search?.toString();
+        const next = pathname + (qs ? `?${qs}` : "");
+        window.location.href = `/login?next=${encodeURIComponent(next)}`;
+        return;
       }
+
+      setChecking(false);
     })();
+  }, [pathname, search]);
 
-    return () => {
-      alive = false;
-    };
-  }, [router, pathname]);
-
-  if (checking) {
-    return (
-      <div style={{ padding: 24, color: "#334155" }}>
-        Tarkistetaan kirjautuminen…
-      </div>
-    );
+  if (checking && !isPublic(pathname)) {
+    return <div style={{ padding: 24 }}>Tarkistetaan kirjautuminen…</div>;
   }
 
-  if (!authed && pathname !== "/login") {
-    // redirect on jo käynnissä
-    return (
-      <div style={{ padding: 24, color: "#334155" }}>
-        Ohjataan kirjautumiseen…
-      </div>
-    );
-  }
-
-  // Authed tai login-sivu
   return <>{children}</>;
 }

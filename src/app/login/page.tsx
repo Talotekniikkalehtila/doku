@@ -33,8 +33,8 @@ export default function LoginPage() {
     return;
   }
 
-  const next = new URLSearchParams(window.location.search).get("next") || "/reports";
-  window.location.href = next;
+  const next = new URLSearchParams(window.location.search).get("next") || "/";
+window.location.href = next;
 }
 
   return (
