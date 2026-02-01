@@ -1,66 +1,97 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+type ReportRow = {
+  id: string;
+  title: string | null;
+  created_at: string;
+};
+
 export default function ArchivePage() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [msg, setMsg] = useState("");
+  const router = useRouter();
+  const [rows, setRows] = useState<ReportRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("reports")
+      .select("id,title,created_at")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) setRows(data as any);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    (async () => {
-      const { data: s } = await supabase.auth.getSession();
-      if (!s.session?.user?.id) {
-        window.location.href = "/login";
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("reports")
-        .select("id,title,status,created_at")
-        .order("created_at", { ascending: false })
-        .limit(200);
-
-      if (error) setMsg(error.message);
-      setRows(data ?? []);
-    })();
+    load();
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-3xl p-4 grid gap-4">
-        <div className="flex items-center justify-between">
-          <button onClick={() => (window.location.href = "/")} className="rounded-xl px-3 py-2 text-sm hover:bg-slate-100">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            onClick={() => router.back()}
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 hover:bg-slate-50"
+          >
             ← Takaisin
           </button>
-          <div className="text-sm font-semibold">Arkisto</div>
+
+          <h1 className="text-lg font-semibold text-slate-900">Arkisto</h1>
+
           <div />
         </div>
 
-        <div className="rounded-2xl border bg-white p-4">
-          {msg ? <div className="text-sm text-red-600">{msg}</div> : null}
-
-          <div className="grid gap-2">
+        {loading ? (
+          <div className="mt-4 text-slate-700">Ladataan…</div>
+        ) : rows.length === 0 ? (
+          <div className="mt-4 text-slate-700">Ei raportteja vielä.</div>
+        ) : (
+          <div className="mt-4 grid gap-2">
             {rows.map((r) => (
-              <button
+              <div
                 key={r.id}
-                onClick={() => (window.location.href = `/reports/${r.id}`)}
-                className="flex items-center justify-between rounded-xl border px-4 py-3 text-left hover:bg-slate-50"
+                className="rounded-lg border border-slate-300 bg-white p-3"
               >
-                <div>
-                  <div className="font-semibold">{r.title}</div>
-                  <div className="text-xs text-slate-500">{new Date(r.created_at).toLocaleString()}</div>
-                </div>
-                <div className="text-xs text-slate-500">{r.status}</div>
-              </button>
-            ))}
+                <div className="flex items-center justify-between gap-2">
+                  <Link
+                    href={`/reports/${r.id}`}
+                    className="font-medium text-slate-900 hover:underline"
+                  >
+                    {r.title || "Raportti"}
+                  </Link>
 
-            {rows.length === 0 ? (
-              <div className="text-sm text-slate-500">Ei vielä raportteja.</div>
-            ) : null}
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Poistetaanko raportti pysyvästi?")) return;
+                      const { error } = await supabase
+                        .from("reports")
+                        .delete()
+                        .eq("id", r.id);
+                      if (error) return alert("Poisto epäonnistui: " + error.message);
+                      load();
+                    }}
+                    className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 hover:bg-slate-50"
+                  >
+                    Poista
+                  </button>
+                </div>
+
+                <div className="mt-1 text-sm text-slate-700">
+                  {new Date(r.created_at).toLocaleString("fi-FI")}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
 }
+
