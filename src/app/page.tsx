@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
@@ -22,25 +23,33 @@ export default function HomePage() {
 
         <div className="mt-4 rounded-lg bg-white p-4 shadow">
           {loading ? (
-            <div className="text-slate-600">Haetaan sessiota…</div>
+            <div className="text-slate-700">Haetaan sessiota…</div>
           ) : email ? (
-            <div className="text-slate-700">
+            <div className="text-slate-900">
               ✅ Kirjautunut: <span className="font-mono">{email}</span>
             </div>
           ) : (
-            <div className="text-slate-700">❌ Ei sessiota</div>
+            <div className="text-slate-900">❌ Ei sessiota</div>
           )}
 
-          <div className="mt-3 flex gap-2">
+          {/* ✅ Selkeät napit: mobiilissa pinoutuu, desktopissa rivissä */}
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <button
-              className="rounded bg-slate-900 px-3 py-2 text-white"
+              className="rounded-md bg-slate-900 px-3 py-2 text-white hover:bg-slate-800"
               onClick={() => (window.location.href = "/reports/new")}
             >
               Luo uusi raportti
             </button>
 
+            <Link
+              href="/archive"
+              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 hover:bg-slate-50"
+            >
+              Arkisto
+            </Link>
+
             <button
-              className="rounded border px-3 py-2"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 hover:bg-slate-50"
               onClick={async () => {
                 await supabase.auth.signOut();
                 window.location.href = "/login";
