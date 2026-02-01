@@ -14,9 +14,40 @@ import {
   uploadCover,
   uploadPointImage,
 } from "@/lib/reportApi";
+import {
+  ArrowLeft,
+  Archive,
+  Copy,
+  Camera,
+  Image as ImageIcon,
+  Share2,
+  KeyRound,
+  RefreshCcw,
+  ExternalLink,
+  ShieldCheck,
+} from "lucide-react";
+
+/** ====== BRAND THEME (sama kuin etusivu) ====== */
+const BRAND = "#3060a6";
+
+function hexToRgba(hex: string, alpha: number) {
+  const h = hex.replace("#", "");
+  const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const glassCardStyle = {
+  background: hexToRgba("#ffffff", 0.86),
+  borderColor: hexToRgba("#ffffff", 0.55),
+} as const;
+
+const glassCardClass =
+  "rounded-3xl border p-5 shadow-lg ring-1 ring-white/60 backdrop-blur-xl";
 
 /** ========== SHARE (DB + RLS, ei Edgeä) ========== */
-
 function makeSlug(len = 14) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
   const arr = new Uint8Array(len);
@@ -60,7 +91,6 @@ async function shareEnsureDB(reportId: string): Promise<ShareRow> {
     .single();
 
   if (error) {
-    // slug collision retry (harvinaista)
     if (String(error.message).toLowerCase().includes("duplicate")) {
       const slug2 = makeSlug();
       const { data: d2, error: e2 } = await supabase
@@ -115,10 +145,8 @@ export default function ReportEditPage() {
     try {
       setShareMsg("Päivitetään…");
       const row = await shareEnsureDB(reportId);
-
       setShareSlug(row.slug);
       setHasPassword(!!row.password_hash);
-
       setShareMsg("Jakolinkki valmis.");
     } catch (e: any) {
       console.error("refreshShare FAIL:", e);
@@ -129,7 +157,6 @@ export default function ReportEditPage() {
   async function saveSharePassword() {
     setShareMsg("");
 
-    // Tyhjä = poisto (käytännöllinen)
     if (!passInput.trim()) {
       await removeSharePassword();
       return;
@@ -149,7 +176,6 @@ export default function ReportEditPage() {
       setPassInput("");
       setShareMsg("Tallennettu.");
 
-      // varmistetaan että myös password_hash-tila pysyy synkassa
       await refreshShare();
     } catch (e: any) {
       console.error("saveSharePassword FAIL:", e);
@@ -189,7 +215,6 @@ export default function ReportEditPage() {
     setReport(data.report);
     setPoints(data.points);
 
-    // Cover signed URL
     if (data.report.cover_image_path) {
       const url = await signedUrl(data.report.cover_image_path);
       setCoverUrl(url);
@@ -197,7 +222,6 @@ export default function ReportEditPage() {
       setCoverUrl(null);
     }
 
-    // Signed URLs for point images
     const withUrls = await Promise.all(
       (data.point_images ?? []).map(async (im: any) => {
         const url = await signedUrl(im.image_path);
@@ -214,7 +238,6 @@ export default function ReportEditPage() {
         window.location.href = "/login";
         return;
       }
-
       await refresh();
       await refreshShare();
     })();
@@ -251,146 +274,211 @@ export default function ReportEditPage() {
       : "";
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto max-w-3xl p-4 grid gap-4">
-        {/* Top bar */}
-<div className="flex items-center justify-between gap-2">
-  <button
-    onClick={() => (window.location.href = "/")}
-    className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 hover:bg-slate-50"
-    type="button"
-  >
-    ← Takaisin
-  </button>
+    <main className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+      {/* Sama bränditausta + animaatio kuin etusivulla */}
+      <div
+        className="absolute inset-0 animate-homebg"
+        style={{
+          background: `
+            radial-gradient(1200px 600px at 10% 10%, ${hexToRgba(BRAND, 0.18)}, transparent 60%),
+            radial-gradient(1000px 500px at 90% 20%, ${hexToRgba(BRAND, 0.12)}, transparent 60%),
+            radial-gradient(900px 500px at 50% 95%, ${hexToRgba(BRAND, 0.10)}, transparent 60%),
+            linear-gradient(180deg, ${hexToRgba(BRAND, 0.10)}, transparent 35%)
+          `,
+        }}
+      />
 
-  <div className="text-sm font-medium text-slate-900">
-    {report?.title || "Raportti"}
-  </div>
+      <div className="relative mx-auto max-w-3xl px-4 pb-24 pt-7 grid gap-4">
+        {/* Top bar – glass */}
+        <div className={glassCardClass} style={glassCardStyle}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+              style={{ background: hexToRgba("#ffffff", 0.88) }}
+              type="button"
+            >
+              <ArrowLeft size={18} />
+              Takaisin
+            </button>
 
-  <button
-    onClick={() => (window.location.href = "/archive")}
-    className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 hover:bg-slate-50"
-    type="button"
-  >
-    Arkisto →
-  </button>
-</div>
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-slate-600">Raportti</div>
+              <div className="mt-1 text-lg font-semibold text-slate-900 truncate">
+                {report?.title || "Raportti"}
+              </div>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                <ShieldCheck size={14} />
+                Muokkaustila
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: BRAND }} />
+              </div>
+            </div>
 
-        {/* Cover + markers */}
-        <div className="rounded-2xl border border-slate-300 bg-white p-4 grid gap-3">
-  <div className="flex flex-wrap items-start justify-between gap-2">
-    <div>
-      <div className="text-sm font-semibold text-slate-900">Pääkuva</div>
-      <div className="text-xs text-slate-700">
-        Lisää kuva ja merkitse huomiot punaisilla pisteillä.
-      </div>
-    </div>
-
-    <div className="flex flex-wrap gap-2">
-      {/* 📸 Ota kuva (kamera) */}
-      <label className="cursor-pointer rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-        📸 Ota kuva
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (f) await onUploadCover(f);
-            e.currentTarget.value = "";
-          }}
-        />
-      </label>
-
-      {/* 🖼️ Valitse galleriasta */}
-      <label className="cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50">
-        🖼️ Valitse galleriasta
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (f) await onUploadCover(f);
-            e.currentTarget.value = "";
-          }}
-        />
-      </label>
-    </div>
-  </div>
-
-          {coverUrl ? (
-            <ImageMarkerEditor
-              imageUrl={coverUrl}
-              points={points}
-              onAddPoint={onAddPoint}
-              onOpenPoint={(id) => setOpenPointId(id)}
-            />
-          ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-700">
-  Lisää ensin pääkuva.
-</div>
-          )}
+            <button
+              onClick={() => (window.location.href = "/archive")}
+              className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+              style={{ background: hexToRgba("#ffffff", 0.88) }}
+              type="button"
+            >
+              Arkisto
+              <Archive size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* Share box */}
-        <div className="rounded-2xl border bg-white p-4 grid gap-3">
-          <div className="flex items-center justify-between">
+        {/* Cover + markers – glass */}
+        <div className={glassCardClass} style={glassCardStyle}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold">Jaa raportti</div>
-              <div className="text-xs text-slate-900">
+              <div className="text-sm font-semibold text-slate-900">Pääkuva</div>
+              <div className="text-xs text-slate-700">
+                Lisää kuva ja merkitse huomiot pisteillä.
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <label
+                className="cursor-pointer inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(BRAND, 0.92)})`,
+                }}
+              >
+                <Camera size={18} />
+                Ota kuva
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (f) await onUploadCover(f);
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </label>
+
+              <label
+                className="cursor-pointer inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+                style={{ background: hexToRgba("#ffffff", 0.88) }}
+              >
+                <ImageIcon size={18} className="text-slate-500" />
+                Valitse galleriasta
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (f) await onUploadCover(f);
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            {coverUrl ? (
+              <ImageMarkerEditor
+                imageUrl={coverUrl}
+                points={points}
+                onAddPoint={onAddPoint}
+                onOpenPoint={(id) => setOpenPointId(id)}
+              />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-700 bg-white/70">
+                Lisää ensin pääkuva.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Share box – glass */}
+        <div className={glassCardClass} style={glassCardStyle}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <Share2 size={16} style={{ color: BRAND }} />
+                Jaa raportti
+              </div>
+              <div className="text-xs text-slate-700">
                 Luo jakolinkki ja aseta salasana (valinnainen).
               </div>
             </div>
+
             <button
               onClick={refreshShare}
-              className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-slate-100"
+              className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+              style={{ background: hexToRgba("#ffffff", 0.88) }}
               type="button"
             >
+              <RefreshCcw size={16} className="text-slate-500" />
               Päivitä
             </button>
           </div>
 
-          {shareSlug ? (
-            <div className="grid gap-2">
-              <div className="text-xs text-slate-700">Linkki</div>
-              <div className="flex gap-2">
-                <input
-  readOnly
-  value={shareLink}
-  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
- />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(shareLink);
-                    setShareMsg("Linkki kopioitu.");
-                  }}
-                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-                >
-                  Kopioi
-                </button>
-              </div>
+          <div className="mt-4">
+            {shareSlug ? (
+              <div className="grid gap-3">
+                <div className="text-xs text-slate-700">Linkki</div>
 
-              <div className="mt-2 grid gap-2">
-                <div className="text-xs text-slate-700">
-                  Salasana: {hasPassword ? "✅ asetettu" : "— ei käytössä"}
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    readOnly
+                    value={shareLink}
+                    className="flex-1 min-w-[260px] rounded-2xl border border-white/70 bg-white/80 px-4 py-2 text-sm text-slate-900 outline-none"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(shareLink);
+                      setShareMsg("Linkki kopioitu.");
+                    }}
+                    className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(BRAND, 0.92)})`,
+                    }}
+                  >
+                    <Copy size={16} />
+                    Kopioi
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => window.open(`/share/${shareSlug}`, "_blank")}
+                    className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+                    style={{ background: hexToRgba("#ffffff", 0.88) }}
+                  >
+                    <ExternalLink size={16} className="text-slate-500" />
+                    Testaa avaus
+                  </button>
+                </div>
+
+                <div className="mt-1 text-xs text-slate-700">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-medium">
+                    <KeyRound size={14} />
+                    Salasana: {hasPassword ? "✅ asetettu" : "— ei käytössä"}
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <input
-  type="password"
-  placeholder="Uusi salasana (tyhjä = poisto)"
-  value={passInput}
-  onChange={(e) => setPassInput(e.target.value)}
-  className="flex-1 min-w-[220px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-600"
- />
+                    type="password"
+                    placeholder="Uusi salasana (tyhjä = poisto)"
+                    value={passInput}
+                    onChange={(e) => setPassInput(e.target.value)}
+                    className="flex-1 min-w-[240px] rounded-2xl border border-white/70 bg-white/80 px-4 py-2 text-sm text-slate-900 placeholder:text-slate-600 outline-none"
+                  />
 
                   <button
                     type="button"
                     onClick={saveSharePassword}
-                    className="rounded-xl bg-blue-900 px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]"
+                    style={{
+                      background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(BRAND, 0.92)})`,
+                    }}
                   >
                     Aseta / Päivitä
                   </button>
@@ -398,28 +486,21 @@ export default function ReportEditPage() {
                   <button
                     type="button"
                     onClick={removeSharePassword}
-                    className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+                    className="rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+                    style={{ background: hexToRgba("#ffffff", 0.88) }}
                   >
                     Poista salasana
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => window.open(`/share/${shareSlug}`, "_blank")}
-                    className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-slate-100"
-                  >
-                    Testaa avaus →
                   </button>
                 </div>
 
                 {shareMsg ? <div className="text-sm text-slate-700">{shareMsg}</div> : null}
               </div>
-            </div>
-          ) : (
-            <div className="text-sm text-slate-700">
-              Luo jakolinkki painamalla “Päivitä”.
-            </div>
-          )}
+            ) : (
+              <div className="text-sm text-slate-700">
+                Luo jakolinkki painamalla “Päivitä”.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Point modal */}
@@ -436,3 +517,4 @@ export default function ReportEditPage() {
     </main>
   );
 }
+
