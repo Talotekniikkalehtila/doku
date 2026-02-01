@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { ShieldCheck, Mail, KeyRound, Loader2 } from "lucide-react";
 
 const BRAND = "#3060a6";
 
@@ -114,16 +115,13 @@ export default function LoginPage() {
         >
           <div className="mb-6 text-center">
             <div
-              className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl text-white"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(
-                  BRAND,
-                  0.85
-                )})`,
-              }}
-            >
-              🔒
-            </div>
+  className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl text-white shadow-sm"
+  style={{
+    background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(BRAND, 0.85)})`,
+  }}
+>
+  <ShieldCheck size={22} strokeWidth={2.2} />
+</div>
             <h1 className="text-xl font-semibold text-slate-900">
               Kirjaudu sisään
             </h1>
@@ -133,36 +131,38 @@ export default function LoginPage() {
           </div>
 
           <div className="grid gap-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Sähköposti
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
-                placeholder="Sähköpostiosoite"
-                autoComplete="email"
-                disabled={loading}
-              />
-            </div>
+            <div className="relative">
+  <Mail
+    size={16}
+    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+  />
+  <input
+    type="email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
+    placeholder="Sähköpostiosoite"
+    autoComplete="email"
+    disabled={loading}
+  />
+</div>
 
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Salasana
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                onKeyDown={(e) => e.key === "Enter" && login()}
-                disabled={loading}
-              />
-            </div>
+            <div className="relative">
+  <KeyRound
+    size={16}
+    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+  />
+  <input
+    type="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="w-full rounded-xl border border-slate-300 py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
+    placeholder="••••••••"
+    autoComplete="current-password"
+    onKeyDown={(e) => e.key === "Enter" && login()}
+    disabled={loading}
+  />
+</div>
 
             <button
               onClick={login}
