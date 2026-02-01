@@ -4,6 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+const BRAND = "#3060a6"; // ← vaihda tähän teidän brändisininen jos eri
+
+function hexToRgba(hex: string, alpha: number) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const n = parseInt(full, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export default function HomePage() {
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,48 +28,134 @@ export default function HomePage() {
     })();
   }, []);
 
+  const bgA = hexToRgba(BRAND, 0.18);
+  const bgB = hexToRgba(BRAND, 0.06);
+  const ring = hexToRgba(BRAND, 0.28);
+
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <h1 className="text-xl font-semibold text-slate-900">Etusivu</h1>
-
-        <div className="mt-4 rounded-lg bg-white p-4 shadow">
-          {loading ? (
-            <div className="text-slate-700">Haetaan sessiota…</div>
-          ) : email ? (
-            <div className="text-slate-900">
-              ✅ Kirjautunut: <span className="font-mono">{email}</span>
+      {/* App-tyylinen “header” */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${bgA}, ${bgB})`,
+          borderBottom: `1px solid ${hexToRgba(BRAND, 0.12)}`,
+        }}
+      >
+        <div className="mx-auto max-w-md px-5 pb-6 pt-7">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-xs font-medium text-slate-600">Dokumentointi</div>
+              <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+                Etusivu
+              </h1>
+              <div className="mt-2 text-sm text-slate-700">
+                {loading ? (
+                  <span>Haetaan sessiota…</span>
+                ) : email ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: BRAND }}
+                    />
+                    <span className="truncate">
+                      Kirjautunut: <span className="font-mono">{email}</span>
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-slate-800">Ei sessiota</span>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="text-slate-900">❌ Ei sessiota</div>
-          )}
 
-          {/* ✅ Selkeät napit: mobiilissa pinoutuu, desktopissa rivissä */}
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <button
-              className="rounded-md bg-slate-900 px-3 py-2 text-white hover:bg-slate-800"
-              onClick={() => (window.location.href = "/reports/new")}
-            >
-              Luo uusi raportti
-            </button>
-
-            <Link
-              href="/archive"
-              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 hover:bg-slate-50"
-            >
-              Arkisto
-            </Link>
-
-            <button
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 hover:bg-slate-50"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                window.location.href = "/login";
+            {/* pieni “badge”/logo-paikka */}
+            <div
+              className="mt-1 hidden h-10 w-10 shrink-0 rounded-2xl sm:block"
+              style={{
+                background: hexToRgba(BRAND, 0.12),
+                border: `1px solid ${hexToRgba(BRAND, 0.14)}`,
               }}
-            >
-              Kirjaudu ulos
-            </button>
+              title="JLTT"
+            />
           </div>
+        </div>
+      </div>
+
+      {/* Sisältö: keskitetty launcher */}
+      <div className="mx-auto flex max-w-md flex-col px-5 pb-24 pt-6">
+        <div className="grid gap-4">
+          {/* Luo raportti - päätoiminto */}
+          <Link
+            href="/reports/new"
+            className="group relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
+            style={{ boxShadow: `0 0 0 1px ${ring}` }}
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className="grid h-12 w-12 place-items-center rounded-2xl text-white"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(
+                    BRAND,
+                    0.85
+                  )})`,
+                }}
+                aria-hidden
+              >
+                <span className="text-lg">＋</span>
+              </div>
+
+              <div className="min-w-0">
+                <div className="text-lg font-semibold text-slate-900">
+                  Luo raportti
+                </div>
+                <div className="mt-0.5 text-sm text-slate-600">
+                  Aloita uusi dokumentointi
+                </div>
+              </div>
+
+              <div className="ml-auto text-slate-400 transition group-hover:translate-x-0.5">
+                →
+              </div>
+            </div>
+          </Link>
+
+          {/* Arkisto */}
+          <Link
+            href="/archive"
+            className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-slate-700">
+                <span className="text-lg">📁</span>
+              </div>
+
+              <div className="min-w-0">
+                <div className="text-lg font-semibold text-slate-900">Arkisto</div>
+                <div className="mt-0.5 text-sm text-slate-600">
+                  Selaa aiempia raportteja
+                </div>
+              </div>
+
+              <div className="ml-auto text-slate-400 transition group-hover:translate-x-0.5">
+                →
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Kirjaudu ulos: mobiilissa alhaalla kiinteä */}
+      <div className="fixed inset-x-0 bottom-0 z-10">
+        <div className="mx-auto max-w-md px-5 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3">
+          <button
+            className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = "/login";
+            }}
+          >
+            Kirjaudu ulos
+          </button>
         </div>
       </div>
     </main>
