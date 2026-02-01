@@ -7,7 +7,10 @@ const BRAND = "#3060a6";
 
 function hexToRgba(hex: string, alpha: number) {
   const h = hex.replace("#", "");
-  const n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+  const n = parseInt(
+    h.length === 3 ? h.split("").map((c) => c + c).join("") : h,
+    16
+  );
   const r = (n >> 16) & 255;
   const g = (n >> 8) & 255;
   const b = n & 255;
@@ -42,8 +45,7 @@ export default function LoginPage() {
       return;
     }
 
-    const next =
-      new URLSearchParams(window.location.search).get("next") || "/";
+    const next = new URLSearchParams(window.location.search).get("next") || "/";
     window.location.href = next;
   }
 
@@ -56,6 +58,7 @@ export default function LoginPage() {
           ${hexToRgba(BRAND, 0.75)},
           ${hexToRgba(BRAND, 0.9)}
         )`,
+        ["--brand" as any]: BRAND,
       }}
     >
       {/* Taustan “valoefekti” */}
@@ -92,9 +95,7 @@ export default function LoginPage() {
             <h1 className="text-xl font-semibold text-slate-900">
               Kirjaudu sisään
             </h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Dokumentointisovellus
-            </p>
+            <p className="mt-1 text-sm text-slate-600">Dokumentointisovellus</p>
           </div>
 
           <div className="grid gap-4">
@@ -106,9 +107,8 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2"
-                style={{ focusRingColor: BRAND }}
-                placeholder="info@jltt.fi"
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
+                placeholder="sähköpostiosoite"
                 autoComplete="email"
               />
             </div>
@@ -121,8 +121,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2"
-                style={{ focusRingColor: BRAND }}
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
                 placeholder="••••••••"
                 autoComplete="current-password"
                 onKeyDown={(e) => e.key === "Enter" && login()}
