@@ -251,54 +251,74 @@ export default function ReportEditPage() {
       : "";
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-3xl p-4 grid gap-4">
         {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="rounded-xl px-3 py-2 text-sm hover:bg-slate-100"
-            type="button"
-          >
-            ← Takaisin
-          </button>
+<div className="flex items-center justify-between gap-2">
+  <button
+    onClick={() => (window.location.href = "/")}
+    className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 hover:bg-slate-50"
+    type="button"
+  >
+    ← Takaisin
+  </button>
 
-          <div className="text-sm text-slate-600">{report?.title || "Raportti"}</div>
+  <div className="text-sm font-medium text-slate-900">
+    {report?.title || "Raportti"}
+  </div>
 
-          <button
-            onClick={() => (window.location.href = "/archive")}
-            className="rounded-xl px-3 py-2 text-sm hover:bg-slate-100"
-            type="button"
-          >
-            Arkisto →
-          </button>
-        </div>
+  <button
+    onClick={() => (window.location.href = "/archive")}
+    className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 hover:bg-slate-50"
+    type="button"
+  >
+    Arkisto →
+  </button>
+</div>
 
         {/* Cover + markers */}
-        <div className="rounded-2xl border bg-white p-4 grid gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="text-sm font-semibold">Pääkuva</div>
-              <div className="text-xs text-slate-500">
-                Lisää/ota kuva ja merkitse huomiot punaisilla pisteillä.
-              </div>
-            </div>
+        <div className="rounded-2xl border border-slate-300 bg-white p-4 grid gap-3">
+  <div className="flex flex-wrap items-start justify-between gap-2">
+    <div>
+      <div className="text-sm font-semibold text-slate-900">Pääkuva</div>
+      <div className="text-xs text-slate-700">
+        Lisää kuva ja merkitse huomiot punaisilla pisteillä.
+      </div>
+    </div>
 
-            <label className="cursor-pointer rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-              + Lisää kuva
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (f) await onUploadCover(f);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </div>
+    <div className="flex flex-wrap gap-2">
+      {/* 📸 Ota kuva (kamera) */}
+      <label className="cursor-pointer rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+        📸 Ota kuva
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (f) await onUploadCover(f);
+            e.currentTarget.value = "";
+          }}
+        />
+      </label>
+
+      {/* 🖼️ Valitse galleriasta */}
+      <label className="cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50">
+        🖼️ Valitse galleriasta
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (f) await onUploadCover(f);
+            e.currentTarget.value = "";
+          }}
+        />
+      </label>
+    </div>
+  </div>
 
           {coverUrl ? (
             <ImageMarkerEditor
@@ -308,9 +328,9 @@ export default function ReportEditPage() {
               onOpenPoint={(id) => setOpenPointId(id)}
             />
           ) : (
-            <div className="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">
-              Lisää ensin pääkuva.
-            </div>
+            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-700">
+  Lisää ensin pääkuva.
+</div>
           )}
         </div>
 
@@ -319,7 +339,7 @@ export default function ReportEditPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold">Jaa raportti</div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-900">
                 Luo jakolinkki ja aseta salasana (valinnainen).
               </div>
             </div>
@@ -334,13 +354,13 @@ export default function ReportEditPage() {
 
           {shareSlug ? (
             <div className="grid gap-2">
-              <div className="text-xs text-slate-500">Linkki</div>
+              <div className="text-xs text-slate-700">Linkki</div>
               <div className="flex gap-2">
                 <input
-                  readOnly
-                  value={shareLink}
-                  className="w-full rounded-xl border px-3 py-2 text-sm"
-                />
+  readOnly
+  value={shareLink}
+  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+ />
                 <button
                   type="button"
                   onClick={async () => {
@@ -354,23 +374,23 @@ export default function ReportEditPage() {
               </div>
 
               <div className="mt-2 grid gap-2">
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-700">
                   Salasana: {hasPassword ? "✅ asetettu" : "— ei käytössä"}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <input
-                    type="password"
-                    placeholder="Uusi salasana (tyhjä = poisto)"
-                    value={passInput}
-                    onChange={(e) => setPassInput(e.target.value)}
-                    className="flex-1 min-w-[220px] rounded-xl border px-3 py-2 text-sm"
-                  />
+  type="password"
+  placeholder="Uusi salasana (tyhjä = poisto)"
+  value={passInput}
+  onChange={(e) => setPassInput(e.target.value)}
+  className="flex-1 min-w-[220px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-600"
+ />
 
                   <button
                     type="button"
                     onClick={saveSharePassword}
-                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-xl bg-blue-900 px-4 py-2 text-sm font-semibold text-white"
                   >
                     Aseta / Päivitä
                   </button>
@@ -396,7 +416,7 @@ export default function ReportEditPage() {
               </div>
             </div>
           ) : (
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-700">
               Luo jakolinkki painamalla “Päivitä”.
             </div>
           )}
