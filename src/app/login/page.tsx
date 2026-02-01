@@ -17,6 +17,16 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function Spinner({ size = 18 }: { size?: number }) {
+  return (
+    <span
+      className="inline-block animate-spin rounded-full border-2 border-white/40 border-t-white"
+      style={{ width: size, height: size }}
+      aria-hidden
+    />
+  );
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +34,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function login() {
+    if (loading) return;
+
     setMsg(null);
     setLoading(true);
 
@@ -53,28 +65,48 @@ export default function LoginPage() {
     <main
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
       style={{
-        background: `linear-gradient(135deg,
-          ${hexToRgba(BRAND, 0.95)},
-          ${hexToRgba(BRAND, 0.75)},
-          ${hexToRgba(BRAND, 0.9)}
-        )`,
         ["--brand" as any]: BRAND,
       }}
     >
-      {/* Taustan “valoefekti” */}
+      {/* 🔵 Liikkuva taustagradientti */}
       <div
-        className="absolute -top-32 -left-32 h-[420px] w-[420px] rounded-full blur-3xl"
-        style={{ background: hexToRgba("#ffffff", 0.25) }}
+        className="absolute inset-0 animate-gradient"
+        style={{
+          background: `
+            radial-gradient(1200px 600px at 10% 10%, ${hexToRgba(
+              BRAND,
+              0.55
+            )}, transparent 60%),
+            radial-gradient(1000px 500px at 90% 20%, ${hexToRgba(
+              BRAND,
+              0.35
+            )}, transparent 60%),
+            radial-gradient(900px 500px at 50% 90%, ${hexToRgba(
+              BRAND,
+              0.45
+            )}, transparent 60%),
+            linear-gradient(135deg, ${hexToRgba(
+              BRAND,
+              0.95
+            )}, ${hexToRgba(BRAND, 0.85)})
+          `,
+        }}
+      />
+
+      {/* Valoefektit */}
+      <div
+        className="pointer-events-none absolute -top-32 -left-32 h-[420px] w-[420px] rounded-full blur-3xl"
+        style={{ background: hexToRgba("#ffffff", 0.18) }}
       />
       <div
-        className="absolute -bottom-32 -right-32 h-[420px] w-[420px] rounded-full blur-3xl"
-        style={{ background: hexToRgba("#000000", 0.15) }}
+        className="pointer-events-none absolute -bottom-32 -right-32 h-[420px] w-[420px] rounded-full blur-3xl"
+        style={{ background: hexToRgba("#000000", 0.18) }}
       />
 
       {/* Login-kortti */}
       <div className="relative z-10 w-full max-w-sm px-5">
         <div
-          className="rounded-3xl border p-6 shadow-xl backdrop-blur-xl"
+          className="rounded-3xl border p-6 shadow-2xl backdrop-blur-xl"
           style={{
             background: hexToRgba("#ffffff", 0.92),
             borderColor: hexToRgba("#ffffff", 0.35),
@@ -95,7 +127,9 @@ export default function LoginPage() {
             <h1 className="text-xl font-semibold text-slate-900">
               Kirjaudu sisään
             </h1>
-            <p className="mt-1 text-sm text-slate-600">Dokumentointisovellus</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Dokumentointisovellus
+            </p>
           </div>
 
           <div className="grid gap-4">
@@ -108,8 +142,9 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--brand)]"
-                placeholder="sähköpostiosoite"
+                placeholder="Sähköpostiosoite"
                 autoComplete="email"
+                disabled={loading}
               />
             </div>
 
@@ -125,13 +160,14 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 onKeyDown={(e) => e.key === "Enter" && login()}
+                disabled={loading}
               />
             </div>
 
             <button
               onClick={login}
               disabled={!email || !password || loading}
-              className="mt-2 w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow transition active:scale-[0.98] disabled:opacity-50"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow transition active:scale-[0.98] disabled:opacity-60"
               style={{
                 background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(
                   BRAND,
@@ -139,7 +175,14 @@ export default function LoginPage() {
                 )})`,
               }}
             >
-              {loading ? "Kirjaudutaan…" : "Kirjaudu"}
+              {loading ? (
+                <>
+                  <Spinner />
+                  <span>Kirjaudutaan…</span>
+                </>
+              ) : (
+                <span>Kirjaudu</span>
+              )}
             </button>
 
             {msg && (
@@ -148,6 +191,25 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* CSS animaatio */}
+      <style jsx>{`
+        @keyframes gradientMove {
+          0% {
+            transform: scale(1) translateY(0);
+          }
+          50% {
+            transform: scale(1.05) translateY(-20px);
+          }
+          100% {
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-gradient {
+          animation: gradientMove 18s ease-in-out infinite;
+        }
+      `}</style>
     </main>
   );
 }
+
