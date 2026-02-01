@@ -204,24 +204,6 @@ export default function NewReportPage() {
           </Link>
         </div>
       </div>
-
-      {/* Sama animaatio kuin etusivulla */}
-      <style jsx>{`
-        @keyframes homeBgMove {
-          0% {
-            transform: scale(1) translateY(0);
-          }
-          50% {
-            transform: scale(1.03) translateY(-14px);
-          }
-          100% {
-            transform: scale(1) translateY(0);
-          }
-        }
-        .animate-homebg {
-          animation: homeBgMove 22s ease-in-out infinite;
-        }
-      `}</style>
     </main>
   );
 }

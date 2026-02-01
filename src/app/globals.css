@@ -38,3 +38,26 @@ input::placeholder,
 textarea::placeholder {
   color: rgba(15, 23, 42, 0.7);
 }
+/* ✅ Home/brand background animaatio (käytetään usealla sivulla) */
+@keyframes homeBgMove {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.03) translateY(-14px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-homebg {
+  animation: homeBgMove 22s ease-in-out infinite;
+}
+
+/* (valinnainen) kun käyttäjä haluaa vähentää animaatioita */
+@media (prefers-reduced-motion: reduce) {
+  .animate-homebg {
+    animation: none;
+  }
+}
