@@ -25,15 +25,16 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ✅ Varmistaa että lomakekenttien teksti ei jää “harmaaksi” */
+/* 🔒 Pakota lomakekenttien teksti oikeasti tummaksi */
 input,
 textarea,
-select,
-button {
-  color: inherit;
+select {
+  color: #0f172a !important; /* slate-900 */
+  background-color: #ffffff;
 }
 
-/* ✅ Placeholder vähän tummemmaksi mobiilissa */
-::placeholder {
-  color: rgba(15, 23, 42, 0.55);
+/* Placeholder vielä tummemmaksi */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(15, 23, 42, 0.7);
 }
