@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-const BRAND = "#3060a6"; // ← vaihda tähän teidän brändisininen jos eri
+const BRAND = "#3060a6";
 
 function hexToRgba(hex: string, alpha: number) {
   const h = hex.replace("#", "");
-  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  const n = parseInt(full, 16);
+  const n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
   const r = (n >> 16) & 255;
   const g = (n >> 8) & 255;
   const b = n & 255;
@@ -28,71 +27,99 @@ export default function HomePage() {
     })();
   }, []);
 
-  const bgA = hexToRgba(BRAND, 0.18);
-  const bgB = hexToRgba(BRAND, 0.06);
-  const ring = hexToRgba(BRAND, 0.28);
-
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* App-tyylinen “header” */}
+    <main className="relative min-h-screen overflow-hidden bg-slate-50">
+      {/* Brändi tausta “wow”, hyvin kevyt */}
       <div
-        className="relative overflow-hidden"
+        className="absolute inset-0 animate-homebg"
         style={{
-          background: `linear-gradient(135deg, ${bgA}, ${bgB})`,
-          borderBottom: `1px solid ${hexToRgba(BRAND, 0.12)}`,
+          background: `
+            radial-gradient(1200px 600px at 10% 10%, ${hexToRgba(BRAND, 0.18)}, transparent 60%),
+            radial-gradient(1000px 500px at 90% 20%, ${hexToRgba(BRAND, 0.12)}, transparent 60%),
+            radial-gradient(900px 500px at 50% 95%, ${hexToRgba(BRAND, 0.10)}, transparent 60%),
+            linear-gradient(180deg, ${hexToRgba(BRAND, 0.10)}, transparent 35%)
+          `,
         }}
-      >
-        <div className="mx-auto max-w-md px-5 pb-6 pt-7">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-xs font-medium text-slate-600">Dokumentointi</div>
-              <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-                Etusivu
-              </h1>
-              <div className="mt-2 text-sm text-slate-700">
-                {loading ? (
-                  <span>Haetaan sessiota…</span>
-                ) : email ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: BRAND }}
-                    />
-                    <span className="truncate">
-                      Kirjautunut: <span className="font-mono">{email}</span>
+      />
+
+      {/* Header / top area */}
+      <div className="relative">
+        <div
+          className="mx-auto max-w-md px-5 pb-6 pt-7"
+          style={{
+            ["--brand" as any]: BRAND,
+          }}
+        >
+          <div
+            className="rounded-3xl border p-5 shadow-sm backdrop-blur-xl"
+            style={{
+              background: hexToRgba("#ffffff", 0.86),
+              borderColor: hexToRgba("#ffffff", 0.55),
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xs font-medium text-slate-600">
+                  Dokumentointi
+                </div>
+                <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+                  Etusivu
+                </h1>
+
+                <div className="mt-2 text-sm text-slate-700">
+                  {loading ? (
+                    <span>Haetaan sessiota…</span>
+                  ) : email ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: BRAND }}
+                      />
+                      <span className="truncate">
+                        Kirjautunut: <span className="font-mono">{email}</span>
+                      </span>
                     </span>
-                  </span>
-                ) : (
-                  <span className="text-slate-800">Ei sessiota</span>
-                )}
+                  ) : (
+                    <span className="text-slate-800">Ei sessiota</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Brändi-merkki */}
+              <div
+                className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-sm"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(BRAND, 0.85)})`,
+                }}
+                title="JLTT"
+              >
+                ✓
               </div>
             </div>
-
-            {/* pieni “badge”/logo-paikka */}
-            <div
-              className="mt-1 hidden h-10 w-10 shrink-0 rounded-2xl sm:block"
-              style={{
-                background: hexToRgba(BRAND, 0.12),
-                border: `1px solid ${hexToRgba(BRAND, 0.14)}`,
-              }}
-              title="JLTT"
-            />
           </div>
         </div>
       </div>
 
-      {/* Sisältö: keskitetty launcher */}
-      <div className="mx-auto flex max-w-md flex-col px-5 pb-24 pt-6">
+      {/* Launcher-napit */}
+      <div className="relative mx-auto flex max-w-md flex-col px-5 pb-24">
         <div className="grid gap-4">
-          {/* Luo raportti - päätoiminto */}
+          {/* Luo raportti - premium highlight */}
           <Link
             href="/reports/new"
-            className="group relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
-            style={{ boxShadow: `0 0 0 1px ${ring}` }}
+            className="group relative overflow-hidden rounded-3xl p-5 shadow-lg ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+            style={{ background: hexToRgba("#ffffff", 0.86) }}
           >
+            {/* Shimmer */}
+            <div
+              className="pointer-events-none absolute -inset-y-10 -left-40 w-40 rotate-12 opacity-0 blur-xl transition duration-700 group-hover:opacity-100 group-hover:translate-x-[520px]"
+              style={{
+                background: `linear-gradient(90deg, transparent, ${hexToRgba("#ffffff", 0.65)}, transparent)`,
+              }}
+            />
+
             <div className="flex items-center gap-4">
               <div
-                className="grid h-12 w-12 place-items-center rounded-2xl text-white"
+                className="grid h-12 w-12 place-items-center rounded-2xl text-white shadow-sm"
                 style={{
                   background: `linear-gradient(135deg, ${BRAND}, ${hexToRgba(
                     BRAND,
@@ -122,7 +149,8 @@ export default function HomePage() {
           {/* Arkisto */}
           <Link
             href="/archive"
-            className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
+            className="group rounded-3xl p-5 shadow-lg ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+            style={{ background: hexToRgba("#ffffff", 0.86) }}
           >
             <div className="flex items-center gap-4">
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-100 text-slate-700">
@@ -130,7 +158,9 @@ export default function HomePage() {
               </div>
 
               <div className="min-w-0">
-                <div className="text-lg font-semibold text-slate-900">Arkisto</div>
+                <div className="text-lg font-semibold text-slate-900">
+                  Arkisto
+                </div>
                 <div className="mt-0.5 text-sm text-slate-600">
                   Selaa aiempia raportteja
                 </div>
@@ -144,20 +174,40 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Kirjaudu ulos: mobiilissa alhaalla kiinteä */}
+      {/* Kirjaudu ulos: alhaalla premium-tyylillä */}
       <div className="fixed inset-x-0 bottom-0 z-10">
         <div className="mx-auto max-w-md px-5 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3">
           <button
-            className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 transition active:scale-[0.99]"
+            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-slate-800 shadow-lg ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
+            style={{ background: hexToRgba("#ffffff", 0.88) }}
             onClick={async () => {
               await supabase.auth.signOut();
               window.location.href = "/login";
             }}
           >
-            Kirjaudu ulos
+            🚪 Kirjaudu ulos
           </button>
         </div>
       </div>
+
+      {/* Animaatio */}
+      <style jsx>{`
+        @keyframes homeBgMove {
+          0% {
+            transform: scale(1) translateY(0);
+          }
+          50% {
+            transform: scale(1.03) translateY(-14px);
+          }
+          100% {
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-homebg {
+          animation: homeBgMove 22s ease-in-out infinite;
+        }
+      `}</style>
     </main>
   );
 }
+
