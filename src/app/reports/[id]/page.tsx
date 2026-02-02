@@ -131,6 +131,8 @@ export default function ReportEditPage() {
 
   // Point modal
   const [openPointId, setOpenPointId] = useState<string | null>(null);
+  // Fullscreen image modal
+const [openImage, setOpenImage] = useState<string | null>(null);
 
   const openPoint = useMemo(
     () => points.find((p) => p.id === openPointId) || null,
@@ -357,6 +359,16 @@ export default function ReportEditPage() {
                   }}
                 />
               </label>
+              <button
+  type="button"
+  disabled={!coverUrl}
+  onClick={() => coverUrl && setOpenImage(coverUrl)}
+  className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99] disabled:opacity-50"
+  style={{ background: hexToRgba("#ffffff", 0.88) }}
+>
+  <ExternalLink size={16} className="text-slate-500" />
+  Avaa kokonäyttöön
+</button>
 
               <label
                 className="cursor-pointer inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition active:scale-[0.99]"
@@ -511,10 +523,46 @@ export default function ReportEditPage() {
           note={openPoint?.note || ""}
           onSave={onSavePoint}
           onUploadImage={onUploadPointImage}
+          onOpenImage={(url) => setOpenImage(url)}
           images={openImgs.map((im) => ({ id: im.id, url: im._signedUrl || null }))}
         />
       </div>
+
+      {openImage && <ImageModal src={openImage} onClose={() => setOpenImage(null)} />}
     </main>
+  );
+} // ✅ tämä sulkee ReportEditPage-komponentin
+
+function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[92vh] max-w-[92vw]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-12 right-0 rounded-full bg-white/10 px-4 py-2 text-white text-sm font-semibold hover:bg-white/20"
+          type="button"
+        >
+          ✕ Sulje
+        </button>
+        <img
+          src={src}
+          alt=""
+          className="max-h-[92vh] max-w-[92vw] rounded-2xl object-contain"
+        />
+      </div>
+    </div>
   );
 }
 
