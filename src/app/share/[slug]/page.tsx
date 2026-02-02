@@ -33,7 +33,21 @@ export default function SharePage() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
   const [openPointId, setOpenPointId] = useState<string | null>(null);
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+if (!url || !anon) {
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <h1 className="text-xl font-semibold">Jaettu raportti</h1>
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+          Supabase env puuttuu selaimesta. URL: {String(!!url)} / ANON: {String(!!anon)}
+        </div>
+      </div>
+    </main>
+  );
+}
   const openPoint = useMemo(
     () => points.find((p) => p.id === openPointId) || null,
     [points, openPointId]
