@@ -41,8 +41,15 @@ if (!url || !anon) {
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-4xl px-4 py-10">
         <h1 className="text-xl font-semibold">Jaettu raportti</h1>
+
         <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
-          Supabase env puuttuu selaimesta. URL: {String(!!url)} / ANON: {String(!!anon)}
+          Supabase env puuttuu selaimesta.  
+          URL: {String(!!url)} / ANON: {String(!!anon)}
+        </div>
+
+        {/* 👇 TÄMÄ ON VERSIOLEIMA */}
+        <div className="mt-3 text-xs text-slate-500">
+          BUILD: share-env-guard-2026-02-02
         </div>
       </div>
     </main>
