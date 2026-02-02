@@ -280,7 +280,7 @@ if (!url || !anon) {
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-5xl px-4 py-8 grid gap-4">
         <div>
-          <div className="text-sm text-slate-500">Jaettu raportti</div>
+          <div className="text-sm text-slate-500">Jaettu raportti • BUILD-TEST-2026-02-02</div>
           <h1 className="text-2xl font-semibold text-slate-900">{report?.title || "Raportti"}</h1>
         </div>
 
